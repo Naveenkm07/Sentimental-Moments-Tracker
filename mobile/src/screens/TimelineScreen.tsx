@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { useNavigation } from '@react-navigation/native';
 import { getYear, parseISO } from 'date-fns';
 import { useApp } from '../AppContext';
-import { useAppTheme, CAT, CategoryType } from '../theme';
+import { useAppTheme, CategoryType } from '../theme';
 import { TimelineRow } from '../components/EntryCard';
 import { BottomNav } from '../components/BottomNav';
+import { LiquidButton } from '../components/LiquidButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const FILTERS: { label: string; value: CategoryType | 'all' }[] = [
@@ -20,7 +22,7 @@ const FILTERS: { label: string; value: CategoryType | 'all' }[] = [
 ];
 
 export function TimelineScreen() {
-  const { moments } = useApp();
+  const { moments, categories } = useApp();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const { C, isDark } = useAppTheme();
@@ -47,19 +49,29 @@ export function TimelineScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
-      <View style={{ backgroundColor: C.card, borderBottomWidth: 1, borderBottomColor: C.border, paddingTop: insets.top + 16, paddingHorizontal: 20 }}>
+      <BlurView
+        intensity={isDark ? 80 : 60}
+        tint={isDark ? 'dark' : 'light'}
+        style={{
+          position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100,
+          backgroundColor: isDark ? 'rgba(30,30,30,0.5)' : 'rgba(255,255,255,0.7)',
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+          paddingTop: insets.top + 16, paddingHorizontal: 20
+        }}
+      >
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
           <View>
             <Text style={{ fontSize: 26, fontWeight: '800', color: C.text, marginBottom: 2 }}>Your lasts</Text>
             <Text style={{ fontSize: 13, color: C.textSoft }}>{moments.length} moments logged</Text>
           </View>
-          <TouchableOpacity onPress={() => navigation.navigate('Stats')} style={{
+          <LiquidButton onPress={() => navigation.navigate('Stats')} activeScale={0.93} style={{
             backgroundColor: isDark ? '#3D1C17' : '#FFF0EE',
             borderRadius: 10, paddingVertical: 8, paddingHorizontal: 14,
             marginTop: 4,
           }}>
             <Text style={{ color: C.primary, fontSize: 13, fontWeight: '700' }}>View stats</Text>
-          </TouchableOpacity>
+          </LiquidButton>
         </View>
 
         {/* Stats Row */}
@@ -80,10 +92,10 @@ export function TimelineScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 12, gap: 8 }}>
           {FILTERS.map(f => {
             const active = filter === f.value;
-            const cat = f.value !== 'all' ? CAT[f.value] : null;
+            const cat = f.value !== 'all' ? categories[f.value] : null;
             const catBg = cat ? (isDark ? cat.darkBg : cat.lightBg) : C.primary;
             return (
-              <TouchableOpacity key={f.value} onPress={() => setFilter(f.value)} style={{
+              <LiquidButton key={f.value} onPress={() => setFilter(f.value)} activeScale={0.92} style={{
                 flexDirection: 'row', alignItems: 'center',
                 paddingVertical: 6, paddingHorizontal: 14, borderRadius: 20,
                 backgroundColor: active ? catBg : C.card,
@@ -93,13 +105,13 @@ export function TimelineScreen() {
                 <Text style={{ fontSize: 13, fontWeight: active ? '700' : '500', color: active ? (cat ? cat.color : 'white') : C.textMid }}>
                   {f.label}
                 </Text>
-              </TouchableOpacity>
+              </LiquidButton>
             );
           })}
         </ScrollView>
-      </View>
+      </BlurView>
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingTop: insets.top + 210, paddingHorizontal: 16, paddingBottom: 160 }}>
         {byYear.length === 0 ? (
           <View style={{ alignItems: 'center', paddingVertical: 48, paddingHorizontal: 24 }}>
             <Text style={{ fontSize: 40, marginBottom: 12 }}>📂</Text>

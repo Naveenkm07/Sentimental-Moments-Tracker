@@ -1,4 +1,5 @@
 import { useColorScheme } from 'react-native';
+import { useApp } from './AppContext';
 
 export const lightC = {
   bg: '#F9F7F4',
@@ -40,14 +41,31 @@ export const darkC = {
 
 export function useAppTheme() {
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  let choice = 'system';
+  try {
+    const app = useApp();
+    if (app && app.themeChoice) choice = app.themeChoice;
+  } catch (e) {
+    // Ignore context errors during init
+  }
+  
+  const isDark = choice === 'dark' ? true : choice === 'light' ? false : colorScheme === 'dark';
+  
   return {
     C: isDark ? darkC : lightC,
     isDark
   };
 }
 
-export const CAT = {
+export interface Category {
+  emoji: string;
+  color: string;
+  lightBg: string;
+  darkBg: string;
+  label: string;
+}
+
+export const CAT: Record<string, Category> = {
   parenthood:  { emoji: '👶', color: '#FF7040', lightBg: '#FFF2EC', darkBg: '#3D1C17', label: 'Parenthood' },
   family:      { emoji: '🏡', color: '#4C79FF', lightBg: '#EEF3FF', darkBg: '#1A243D', label: 'Family' },
   friendships: { emoji: '🤝', color: '#9B5EDB', lightBg: '#F5F0FF', darkBg: '#2C1A3D', label: 'Friendships' },
@@ -55,7 +73,7 @@ export const CAT = {
   self:        { emoji: '🌱', color: '#2BB57A', lightBg: '#E8FFF4', darkBg: '#1A3D2C', label: 'Self' },
   milestones:  { emoji: '🎯', color: '#FF5A5A', lightBg: '#FFF0F0', darkBg: '#3D1A1A', label: 'Milestones' },
   other:       { emoji: '✨', color: '#8A8A8A', lightBg: '#F5F5F5', darkBg: '#2A2A2A', label: 'Other' },
-} as const;
+};
 
 export const MOOD = {
   bittersweet: { emoji: '🍂', label: 'Bittersweet', color: '#E86B3A', lightBg: '#FFF2EC', darkBg: '#3D1C17' },
@@ -67,7 +85,7 @@ export const MOOD = {
 } as const;
 
 export type MoodType = keyof typeof MOOD;
-export type CategoryType = keyof typeof CAT;
+export type CategoryType = string;
 
 export interface Moment {
   id: string;

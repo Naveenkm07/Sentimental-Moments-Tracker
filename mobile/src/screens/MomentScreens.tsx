@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { format, parseISO } from 'date-fns';
-import { Edit3, Trash2, Mic, Image as ImageIcon, Share2 } from 'lucide-react-native';
+import { Edit3, Trash2, Mic, Image as ImageIcon, Share2, ChevronDown } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from '../AppContext';
-import { useAppTheme, CAT, MOOD, CategoryType, MoodType } from '../theme';
+import { useAppTheme, MOOD, CategoryType, MoodType } from '../theme';
 import { ScreenHeader } from '../components/ScreenHeader';
 
 export function MomentDetailScreen() {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
-  const { moments } = useApp();
-  const { C } = useAppTheme();
+  const { moments, categories } = useApp();
+  const { C, isDark } = useAppTheme();
+  const insets = useSafeAreaInsets();
   
   const id = route.params?.id;
   const m = moments.find(x => x.id === id);
@@ -25,38 +26,46 @@ export function MomentDetailScreen() {
     );
   }
 
-  const cat = CAT[m.category];
+  const cat = categories[m.category] || categories['other'];
   const mood = MOOD[m.mood];
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <ScreenHeader title="Memory" right={
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <TouchableOpacity onPress={() => navigation.navigate('MomentEdit', { id })} style={{ backgroundColor: '#F2EFEB', borderRadius: 10, width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+          <TouchableOpacity onPress={() => navigation.navigate('MomentEdit', { id })} style={{ backgroundColor: isDark ? '#2A2A2A' : '#F2EFEB', borderRadius: 10, width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
             <Edit3 size={16} color={C.textMid} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('MomentDelete', { id })} style={{ backgroundColor: '#FFF0EE', borderRadius: 10, width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+          <TouchableOpacity onPress={() => navigation.navigate('MomentDelete', { id })} style={{ backgroundColor: isDark ? '#3D1C17' : '#FFF0EE', borderRadius: 10, width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
             <Trash2 size={16} color={C.primary} />
           </TouchableOpacity>
         </View>
       } />
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-          <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: cat.lightBg, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 24 }}>{cat.emoji}</Text>
+      <ScrollView contentContainerStyle={{ paddingTop: m.photoUrl ? 0 : insets.top + 80, paddingBottom: 60 }}>
+        {m.photoUrl && (
+          <Image 
+            source={{ uri: m.photoUrl }} 
+            style={{ width: '100%', height: 400, resizeMode: 'cover', marginBottom: 24 }} 
+          />
+        )}
+        
+        <View style={{ paddingHorizontal: 20 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+            <View style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: cat.lightBg, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ fontSize: 24 }}>{cat.emoji}</Text>
+            </View>
+            <View>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: cat.color, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>{cat.label}</Text>
+              <Text style={{ fontSize: 13, color: C.textSoft }}>{format(parseISO(m.date), 'MMMM d, yyyy')}</Text>
+            </View>
           </View>
-          <View>
-            <Text style={{ fontSize: 12, fontWeight: '700', color: cat.color, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>{cat.label}</Text>
-            <Text style={{ fontSize: 13, color: C.textSoft }}>{format(parseISO(m.date), 'MMMM d, yyyy')}</Text>
+
+          <Text style={{ fontSize: 22, fontWeight: '800', color: C.text, marginBottom: 12, lineHeight: 28 }}>{m.title}</Text>
+
+          <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: mood.lightBg, paddingVertical: 6, paddingHorizontal: 14, borderRadius: 20, marginBottom: 20 }}>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: mood.color }}>{mood.emoji} {mood.label}</Text>
           </View>
-        </View>
-
-        <Text style={{ fontSize: 22, fontWeight: '800', color: C.text, marginBottom: 12, lineHeight: 28 }}>{m.title}</Text>
-
-        <View style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: mood.lightBg, paddingVertical: 6, paddingHorizontal: 14, borderRadius: 20, marginBottom: 20 }}>
-          <Text style={{ fontSize: 13, fontWeight: '700', color: mood.color }}>{mood.emoji} {mood.label}</Text>
-        </View>
 
         {m.detail && (
           <View style={{ backgroundColor: C.card, borderWidth: 1, borderColor: C.border, borderRadius: 14, padding: 16, marginBottom: 16, borderLeftWidth: 4, borderLeftColor: cat.color }}>
@@ -86,10 +95,11 @@ export function MomentDetailScreen() {
           <Text style={{ fontSize: 14, color: '#7A5600', lineHeight: 22 }}>You captured this moment. One day, this record will be something you're deeply grateful for.</Text>
         </View>
 
-        <TouchableOpacity style={{ width: '100%', marginTop: 20, padding: 14, backgroundColor: C.card, borderWidth: 1, borderColor: C.border, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-          <Share2 size={16} color={C.textMid} />
-          <Text style={{ fontSize: 14, fontWeight: '600', color: C.textMid }}>Share this memory</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={{ width: '100%', marginTop: 20, padding: 14, backgroundColor: C.card, borderWidth: 1, borderColor: C.border, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <Share2 size={16} color={C.textMid} />
+            <Text style={{ fontSize: 14, fontWeight: '600', color: C.textMid }}>Share this memory</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
@@ -98,8 +108,9 @@ export function MomentDetailScreen() {
 export function EditMomentScreen() {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
-  const { moments, updateMoment } = useApp();
+  const { moments, updateMoment, categories } = useApp();
   const { C, isDark } = useAppTheme();
+  const insets = useSafeAreaInsets();
   
   const id = route.params?.id;
   const m = moments.find(x => x.id === id);
@@ -109,6 +120,7 @@ export function EditMomentScreen() {
   const [date, setDate] = useState(m?.date ?? new Date().toISOString().split('T')[0]);
   const [mood, setMood] = useState<MoodType>(m?.mood ?? 'nostalgic');
   const [category, setCategory] = useState<CategoryType>(m?.category ?? 'family');
+  const [showCats, setShowCats] = useState(false);
 
   if (!m) return null;
 
@@ -124,7 +136,7 @@ export function EditMomentScreen() {
           <Text style={{ color: 'white', fontSize: 14, fontWeight: '700' }}>Save</Text>
         </TouchableOpacity>
       } />
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 80 }}>
+      <ScrollView contentContainerStyle={{ paddingTop: insets.top + 80, padding: 16, paddingBottom: 80 }}>
         <FormLabel text="The last time I..." />
         <TextInput value={title} onChangeText={setTitle} style={{ backgroundColor: C.card, borderWidth: 1.5, borderColor: C.border, borderRadius: 12, padding: 12, fontSize: 15, color: C.text, marginBottom: 14 }} />
 
@@ -147,17 +159,31 @@ export function EditMomentScreen() {
         </View>
 
         <FormLabel text="Category" />
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-          {(Object.entries(CAT) as [CategoryType, typeof CAT[CategoryType]][]).map(([key, cv]) => {
-            const catBg = isDark ? cv.darkBg : cv.lightBg;
+        <TouchableOpacity onPress={() => setShowCats(!showCats)} style={{
+          backgroundColor: C.card, borderWidth: 1.5, borderColor: C.border,
+          borderRadius: 12, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 10,
+          marginBottom: 8,
+        }}>
+          <Text style={{ fontSize: 20 }}>{categories[category]?.emoji || '✨'}</Text>
+          <Text style={{ flex: 1, fontSize: 15, fontWeight: '600', color: categories[category]?.color || C.text }}>
+            {categories[category]?.label || 'Unknown'}
+          </Text>
+          <ChevronDown size={16} color={C.textSoft} style={{ transform: [{ rotate: showCats ? '180deg' : '0deg' }] }} />
+        </TouchableOpacity>
+
+        {showCats && (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+            {(Object.entries(categories) as [CategoryType, any][]).map(([key, cat]) => {
+            const catBg = isDark ? cat.darkBg : cat.lightBg;
             return (
-              <TouchableOpacity key={key} onPress={() => setCategory(key)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 20, backgroundColor: category === key ? catBg : C.card, borderWidth: 1.5, borderColor: category === key ? cv.color : C.border }}>
-                <Text>{cv.emoji}</Text>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: category === key ? cv.color : C.textMid }}>{cv.label}</Text>
+              <TouchableOpacity key={key} onPress={() => { setCategory(key); setShowCats(false); }} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 20, backgroundColor: category === key ? catBg : C.card, borderWidth: 1.5, borderColor: category === key ? cat.color : C.border }}>
+                <Text>{cat.emoji}</Text>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: category === key ? cat.color : C.textMid }}>{cat.label}</Text>
               </TouchableOpacity>
             );
           })}
-        </View>
+          </View>
+        )}
 
         <TouchableOpacity onPress={handleSave} style={{ width: '100%', padding: 16, backgroundColor: C.primary, borderRadius: 14, alignItems: 'center', shadowColor: C.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.35, shadowRadius: 16, elevation: 4 }}>
           <Text style={{ color: 'white', fontSize: 16, fontWeight: '700' }}>Save changes</Text>
@@ -171,7 +197,8 @@ export function DeleteConfirmScreen() {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
   const { moments, deleteMoment } = useApp();
-  const { C } = useAppTheme();
+  const { C, isDark } = useAppTheme();
+  const insets = useSafeAreaInsets();
   
   const id = route.params?.id;
   const m = moments.find(x => x.id === id);
@@ -185,7 +212,7 @@ export function DeleteConfirmScreen() {
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <ScreenHeader title="Delete memory" />
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <View style={{ width: 80, height: 80, borderRadius: 24, backgroundColor: '#FFF0EE', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+        <View style={{ width: 80, height: 80, borderRadius: 24, backgroundColor: isDark ? '#3D1C17' : '#FFF0EE', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
           <Text style={{ fontSize: 36 }}>🗑️</Text>
         </View>
         <Text style={{ fontSize: 22, fontWeight: '800', color: C.text, marginBottom: 10, textAlign: 'center' }}>Delete this memory?</Text>

@@ -1,14 +1,16 @@
 import React, { useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { useNavigation } from '@react-navigation/native';
 import { getYear, parseISO } from 'date-fns';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight } from 'lucide-react-native';
 import { useApp } from '../AppContext';
-import { useAppTheme, CAT, MOOD } from '../theme';
+import { useAppTheme, MOOD } from '../theme';
+import { BottomNav } from '../components/BottomNav';
 
 export function StatsScreen() {
-  const { moments } = useApp();
+  const { moments, categories } = useApp();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const { C, isDark } = useAppTheme();
@@ -37,12 +39,22 @@ export function StatsScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
-      <View style={{ backgroundColor: C.card, borderBottomWidth: 1, borderBottomColor: C.border, paddingTop: insets.top + 16, paddingHorizontal: 20, paddingBottom: 16 }}>
+      <BlurView
+        intensity={isDark ? 80 : 60}
+        tint={isDark ? 'dark' : 'light'}
+        style={{
+          position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100,
+          backgroundColor: isDark ? 'rgba(30,30,30,0.5)' : 'rgba(255,255,255,0.7)',
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+          paddingTop: insets.top + 16, paddingHorizontal: 20, paddingBottom: 16
+        }}
+      >
         <Text style={{ fontSize: 26, fontWeight: '800', color: C.text, marginBottom: 2 }}>Your stats</Text>
         <Text style={{ fontSize: 13, color: C.textSoft }}>A reflection of what you've captured</Text>
-      </View>
+      </BlurView>
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 16 }}>
+      <ScrollView contentContainerStyle={{ paddingTop: insets.top + 110, padding: 16, paddingBottom: 160, gap: 16 }}>
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <StatCard n={moments.length} label="Moments logged" color={C.primary} emoji="📝" />
           <StatCard n={streak} label="Day streak" color={C.green} emoji="🔥" />
@@ -69,7 +81,7 @@ export function StatsScreen() {
         <SectionCard title="By category">
           <View style={{ gap: 10 }}>
             {catCounts.map(([key, count]) => {
-              const cat = CAT[key as keyof typeof CAT];
+              const cat = categories[key];
               if (!cat) return null;
               return (
                 <View key={key}>
@@ -105,16 +117,18 @@ export function StatsScreen() {
         <View style={{ backgroundColor: '#4C2009', borderRadius: 16, padding: 18 }}>
           <Text style={{ fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,0.5)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.6 }}>✨ Insight</Text>
           <Text style={{ fontSize: 15, color: 'white', fontWeight: '700', marginBottom: 6, lineHeight: 21 }}>
-            You log most in "{catCounts[0] ? CAT[catCounts[0][0] as keyof typeof CAT]?.label : 'Family'}"
+            You log most in "{catCounts[0] ? categories[catCounts[0][0]]?.label : 'Family'}"
           </Text>
           <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 18 }}>
             The things we record most are often the things we care about deepest.
           </Text>
         </View>
       </ScrollView>
+      <BottomNav />
     </View>
   );
 }
+
 
 function StatCard({ n, label, color, emoji }: { n: number; label: string; color: string; emoji: string }) {
   const { C } = useAppTheme();

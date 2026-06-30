@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import { Mic, Image as ImageIcon } from 'lucide-react-native';
 import { formatDistanceToNow, parseISO, format } from 'date-fns';
-import { useAppTheme, CAT, MOOD, Moment } from '../theme';
+import { useAppTheme, MOOD, Moment } from '../theme';
+import { useApp } from '../AppContext';
+import { LiquidButton } from './LiquidButton';
 
 interface EntryCardProps {
   moment: Moment;
@@ -12,21 +14,21 @@ interface EntryCardProps {
 
 export function EntryCard({ moment, onClick, compact }: EntryCardProps) {
   const { C, isDark } = useAppTheme();
-  const cat = CAT[moment.category];
+  const { categories } = useApp();
+  const cat = categories[moment.category] || categories['other'];
   const mood = MOOD[moment.mood];
   const rel = formatDistanceToNow(parseISO(moment.date), { addSuffix: true });
   const catBg = isDark ? cat.darkBg : cat.lightBg;
   const moodBg = isDark ? mood.darkBg : mood.lightBg;
 
   return (
-    <TouchableOpacity
+    <LiquidButton
       onPress={onClick}
-      disabled={!onClick}
+      activeScale={0.96}
       style={{
-        flexDirection: 'row', alignItems: 'flex-start', gap: 12,
         backgroundColor: C.card,
         borderWidth: 1, borderColor: C.border,
-        borderRadius: 14, padding: 14,
+        borderRadius: 16, overflow: 'hidden',
         width: '100%',
         shadowColor: C.shadow,
         shadowOffset: { width: 0, height: 2 },
@@ -35,13 +37,20 @@ export function EntryCard({ moment, onClick, compact }: EntryCardProps) {
         elevation: 2,
       }}
     >
-      {/* Category Icon */}
-      <View style={{
-        width: 44, height: 44, borderRadius: 12,
-        backgroundColor: catBg, alignItems: 'center', justifyContent: 'center',
-      }}>
-        <Text style={{ fontSize: 20 }}>{cat.emoji}</Text>
-      </View>
+      {moment.photoUrl && !compact && (
+        <Image 
+          source={{ uri: moment.photoUrl }} 
+          style={{ width: '100%', height: 180, resizeMode: 'cover' }} 
+        />
+      )}
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 14 }}>
+        {/* Category Icon */}
+        <View style={{
+          width: 44, height: 44, borderRadius: 12,
+          backgroundColor: catBg, alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Text style={{ fontSize: 20 }}>{cat.emoji}</Text>
+        </View>
 
       <View style={{ flex: 1 }}>
         <Text style={{ color: C.text, fontSize: 15, fontWeight: '600', marginBottom: 3, lineHeight: 20 }}>
@@ -72,20 +81,22 @@ export function EntryCard({ moment, onClick, compact }: EntryCardProps) {
             </Text>
           </View>
         </View>
+        </View>
       </View>
-    </TouchableOpacity>
+    </LiquidButton>
   );
 }
 
 export function TimelineRow({ moment, onClick }: { moment: Moment; onClick?: () => void }) {
   const { C } = useAppTheme();
-  const cat = CAT[moment.category];
+  const { categories } = useApp();
+  const cat = categories[moment.category] || categories['other'];
   const mood = MOOD[moment.mood];
 
   return (
-    <TouchableOpacity
+    <LiquidButton
       onPress={onClick}
-      disabled={!onClick}
+      activeScale={0.97}
       style={{
         flexDirection: 'row', alignItems: 'center', gap: 12,
         backgroundColor: C.card, borderWidth: 1, borderColor: C.border,
@@ -115,6 +126,6 @@ export function TimelineRow({ moment, onClick }: { moment: Moment; onClick?: () 
           {moment.hasVoiceNote && <Mic size={13} color={C.textSoft} />}
         </View>
       )}
-    </TouchableOpacity>
+    </LiquidButton>
   );
 }

@@ -1,10 +1,12 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { useNavigation } from '@react-navigation/native';
 import { Bell, Tag, CloudUpload, Lock, Moon, HelpCircle, Info, ChevronRight, Star, Users } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../theme';
 import { ScreenName } from '../theme';
+import { BottomNav } from '../components/BottomNav';
 
 interface SettingRow {
   icon: any;
@@ -30,16 +32,26 @@ const ROWS: SettingRow[] = [
 export function SettingsScreen() {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
-  const { C } = useAppTheme();
+  const { C, isDark } = useAppTheme();
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
-      <View style={{ backgroundColor: C.card, borderBottomWidth: 1, borderBottomColor: C.border, paddingTop: insets.top + 16, paddingHorizontal: 20, paddingBottom: 16 }}>
+      <BlurView
+        intensity={isDark ? 80 : 60}
+        tint={isDark ? 'dark' : 'light'}
+        style={{
+          position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100,
+          backgroundColor: isDark ? 'rgba(30,30,30,0.5)' : 'rgba(255,255,255,0.7)',
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+          paddingTop: insets.top + 16, paddingHorizontal: 20, paddingBottom: 16
+        }}
+      >
         <Text style={{ fontSize: 26, fontWeight: '800', color: C.text, marginBottom: 2 }}>Settings</Text>
         <Text style={{ fontSize: 13, color: C.textSoft }}>Customize your Last Time experience</Text>
-      </View>
+      </BlurView>
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingTop: insets.top + 110, paddingHorizontal: 16, paddingBottom: 160 }}>
         {/* Profile card */}
         <View style={{
           backgroundColor: C.card, borderRadius: 16, padding: 16,
@@ -106,6 +118,7 @@ export function SettingsScreen() {
           Last Time · v1.0.0 · Made with ❤️
         </Text>
       </ScrollView>
+      <BottomNav />
     </View>
   );
 }

@@ -2,7 +2,8 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AppProvider, useApp } from './src/AppContext';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Platform } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAppTheme } from './src/theme';
 
 import { SplashScreen } from './src/screens/SplashScreen';
@@ -14,6 +15,7 @@ import { SettingsScreen } from './src/screens/SettingsScreen';
 import { LogScreen } from './src/screens/LogScreen';
 import { LogVoiceScreen, LogSuccessScreen } from './src/screens/LogFlowScreens';
 import { MomentDetailScreen, EditMomentScreen, DeleteConfirmScreen } from './src/screens/MomentScreens';
+import { PasscodeScreen } from './src/screens/PasscodeScreen';
 import { SearchScreen } from './src/screens/SearchScreen';
 import { ProfileScreen } from './src/screens/ProfileScreens';
 import {
@@ -52,7 +54,7 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function MainNavigator() {
-  const { isLoaded, hasOnboarded } = useApp();
+  const { isLoaded, hasOnboarded, passcodeEnabled, isUnlocked } = useApp();
   const { C } = useAppTheme();
 
   if (!isLoaded) {
@@ -61,6 +63,10 @@ function MainNavigator() {
         <ActivityIndicator size="large" color={C.primary} />
       </View>
     );
+  }
+
+  if (passcodeEnabled && !isUnlocked) {
+    return <PasscodeScreen mode="unlock" onSuccess={() => {}} />;
   }
 
   return (
@@ -101,11 +107,27 @@ function MainNavigator() {
 }
 
 export default function App() {
+  const isWeb = Platform.OS === 'web';
   return (
-    <AppProvider>
-      <NavigationContainer>
-        <MainNavigator />
-      </NavigationContainer>
-    </AppProvider>
+    <SafeAreaProvider>
+      <AppProvider>
+        <View style={{ flex: 1, backgroundColor: isWeb ? '#0A0A0A' : undefined, alignItems: isWeb ? 'center' : undefined }}>
+          <View style={{ 
+            flex: 1, 
+            maxWidth: isWeb ? 480 : undefined, 
+            width: '100%', 
+            overflow: 'hidden',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: isWeb ? 0.5 : 0,
+            shadowRadius: 30,
+          }}>
+            <NavigationContainer>
+              <MainNavigator />
+            </NavigationContainer>
+          </View>
+        </View>
+      </AppProvider>
+    </SafeAreaProvider>
   );
 }

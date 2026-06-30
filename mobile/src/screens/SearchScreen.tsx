@@ -4,13 +4,13 @@ import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft, Search, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from '../AppContext';
-import { useAppTheme, CAT } from '../theme';
+import { useAppTheme } from '../theme';
 import { EntryCard } from '../components/EntryCard';
 
 export function SearchScreen() {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
-  const { moments } = useApp();
+  const { moments, categories } = useApp();
   const { C, isDark } = useAppTheme();
   
   const [query, setQuery] = useState('');
@@ -19,7 +19,7 @@ export function SearchScreen() {
     ? moments.filter(m =>
         m.title.toLowerCase().includes(query.toLowerCase()) ||
         m.detail?.toLowerCase().includes(query.toLowerCase()) ||
-        CAT[m.category].label.toLowerCase().includes(query.toLowerCase())
+        categories[m.category]?.label.toLowerCase().includes(query.toLowerCase())
       )
     : [];
 
@@ -28,10 +28,10 @@ export function SearchScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <View style={{ backgroundColor: C.card, borderBottomWidth: 1, borderBottomColor: C.border, paddingTop: insets.top + 16, paddingHorizontal: 16, paddingBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={{ backgroundColor: '#F2EFEB', borderRadius: 18, width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ backgroundColor: isDark ? '#2A2A2A' : '#F2EFEB', borderRadius: 18, width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
           <ArrowLeft size={18} color={C.text} />
         </TouchableOpacity>
-        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#F2EFEB', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 }}>
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: isDark ? '#2A2A2A' : '#F2EFEB', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 }}>
           <Search size={16} color={C.textSoft} />
           <TextInput
             autoFocus
@@ -49,7 +49,7 @@ export function SearchScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
         {query.trim().length < 2 ? (
           <View>
             <Text style={{ fontSize: 11, fontWeight: '700', color: C.textSoft, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 12 }}>Recent</Text>
@@ -61,7 +61,7 @@ export function SearchScreen() {
 
             <Text style={{ fontSize: 11, fontWeight: '700', color: C.textSoft, letterSpacing: 0.8, textTransform: 'uppercase', marginTop: 24, marginBottom: 12 }}>Browse by Category</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-              {Object.entries(CAT).map(([key, cat]) => {
+              {Object.entries(categories).map(([key, cat]) => {
                 const count = moments.filter(m => m.category === key).length;
                 const bg = isDark ? cat.darkBg : cat.lightBg;
                 return (

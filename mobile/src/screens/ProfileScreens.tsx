@@ -5,13 +5,13 @@ import { getYear, parseISO } from 'date-fns';
 import { ChevronRight } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from '../AppContext';
-import { useAppTheme, CAT, MOOD } from '../theme';
+import { useAppTheme, MOOD } from '../theme';
 import { BottomNav } from '../components/BottomNav';
 
 export function ProfileScreen() {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
-  const { moments } = useApp();
+  const { moments, categories } = useApp();
   const { C, isDark } = useAppTheme();
 
   const years = useMemo(() => {
@@ -23,8 +23,8 @@ export function ProfileScreen() {
     const counts: Record<string, number> = {};
     moments.forEach(m => { counts[m.category] = (counts[m.category] ?? 0) + 1; });
     const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
-    return top ? CAT[top[0] as keyof typeof CAT] : null;
-  }, [moments]);
+    return top ? categories[top[0]] : null;
+  }, [moments, categories]);
 
   const favMood = useMemo(() => {
     const counts: Record<string, number> = {};

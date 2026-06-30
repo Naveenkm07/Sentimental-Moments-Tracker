@@ -8,7 +8,7 @@ import { useAppTheme } from '../theme';
 
 export function LogVoiceScreen() {
   const navigation = useNavigation<any>();
-  const { C } = useAppTheme();
+  const { C, isDark } = useAppTheme();
   const insets = useSafeAreaInsets();
   
   const [state, setState] = useState<'idle' | 'recording' | 'done'>('idle');
@@ -34,7 +34,7 @@ export function LogVoiceScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <View style={{ backgroundColor: C.card, borderBottomWidth: 1, borderBottomColor: C.border, paddingTop: insets.top + 16, paddingHorizontal: 16, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={{ backgroundColor: '#F2EFEB', borderRadius: 18, width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ backgroundColor: isDark ? '#2A2A2A' : '#F2EFEB', borderRadius: 18, width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
           <ArrowLeft size={18} color={C.text} />
         </TouchableOpacity>
         <Text style={{ fontSize: 17, fontWeight: '700', color: C.text }}>Voice Note</Text>

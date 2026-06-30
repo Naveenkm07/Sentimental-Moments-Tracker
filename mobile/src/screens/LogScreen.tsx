@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Camera, Mic, ChevronDown } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useApp } from '../AppContext';
-import { useAppTheme, CAT, MOOD, CategoryType, MoodType } from '../theme';
+import { useAppTheme, MOOD, CategoryType, MoodType } from '../theme';
 import { ScreenHeader } from '../components/ScreenHeader';
 
 export function LogScreen() {
-  const { addMoment } = useApp();
+  const { addMoment, categories } = useApp();
   const navigation = useNavigation<any>();
   const { C, isDark } = useAppTheme();
   const insets = useSafeAreaInsets();
@@ -19,18 +20,39 @@ export function LogScreen() {
   const [category, setCategory] = useState<CategoryType>('family');
   const [mood, setMood] = useState<MoodType>('nostalgic');
   const [showCats, setShowCats] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState('');
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setPhotoUrl(result.assets[0].uri);
+    }
+  };
 
   const canSave = title.trim().length >= 3;
 
   const handleSave = () => {
     if (!canSave) return;
-    addMoment({ title: title.trim(), detail: detail.trim() || undefined, date, category, mood });
+    addMoment({ 
+      title: title.trim(), 
+      detail: detail.trim() || undefined, 
+      date, 
+      category, 
+      mood,
+      hasPhoto: photoUrl.trim().length > 0,
+      photoUrl: photoUrl.trim() || undefined
+    });
     // Navigate to Success screen later, just go back for now
     navigation.goBack();
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: C.bg, paddingTop: insets.top }}>
+    <View style={{ flex: 1, backgroundColor: C.bg }}>
       <ScreenHeader title="New memory" right={
         <TouchableOpacity onPress={handleSave} disabled={!canSave} style={{
           backgroundColor: canSave ? C.primary : C.border,
@@ -40,26 +62,35 @@ export function LogScreen() {
         </TouchableOpacity>
       } />
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120 }}>
+      <ScrollView contentContainerStyle={{ paddingTop: insets.top + 80, padding: 16, paddingBottom: 120 }}>
         {/* Photo/Voice Area */}
         <View style={{
           backgroundColor: C.card, borderWidth: 2, borderColor: C.border, borderStyle: 'dashed',
           borderRadius: 16, padding: 24, marginBottom: 16, alignItems: 'center'
         }}>
-          <View style={{ flexDirection: 'row', gap: 20 }}>
-            <TouchableOpacity style={{ alignItems: 'center', gap: 6 }}>
-              <View style={{ width: 52, height: 52, borderRadius: 14, backgroundColor: isDark ? '#3D1C17' : '#FFF0EE', alignItems: 'center', justifyContent: 'center' }}>
-                <Camera size={22} color={C.primary} />
-              </View>
-              <Text style={{ fontSize: 12, color: C.textSoft, fontWeight: '500' }}>Add photo</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={{ alignItems: 'center', gap: 6 }}>
-              <View style={{ width: 52, height: 52, borderRadius: 14, backgroundColor: isDark ? '#3D1C17' : '#FFF0EE', alignItems: 'center', justifyContent: 'center' }}>
-                <Mic size={22} color={C.primary} />
-              </View>
-              <Text style={{ fontSize: 12, color: C.textSoft, fontWeight: '500' }}>Add voice note</Text>
-            </TouchableOpacity>
-          </View>
+          {!photoUrl ? (
+            <View style={{ flexDirection: 'row', gap: 20 }}>
+              <TouchableOpacity onPress={pickImage} style={{ alignItems: 'center', gap: 6 }}>
+                <View style={{ width: 52, height: 52, borderRadius: 14, backgroundColor: isDark ? '#3D1C17' : '#FFF0EE', alignItems: 'center', justifyContent: 'center' }}>
+                  <Camera size={22} color={C.primary} />
+                </View>
+                <Text style={{ fontSize: 12, color: C.textSoft, fontWeight: '500' }}>Add photo</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={{ alignItems: 'center', gap: 6 }}>
+                <View style={{ width: 52, height: 52, borderRadius: 14, backgroundColor: isDark ? '#3D1C17' : '#FFF0EE', alignItems: 'center', justifyContent: 'center' }}>
+                  <Mic size={22} color={C.primary} />
+                </View>
+                <Text style={{ fontSize: 12, color: C.textSoft, fontWeight: '500' }}>Voice note</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={{ width: '100%', alignItems: 'center' }}>
+              <Image source={{ uri: photoUrl }} style={{ width: '100%', height: 200, borderRadius: 12 }} resizeMode="cover" />
+              <TouchableOpacity onPress={() => setPhotoUrl('')} style={{ marginTop: 16, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20 }}>
+                <Text style={{ color: C.text, fontSize: 13, fontWeight: '600' }}>Remove Photo</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Title */}
@@ -130,16 +161,16 @@ export function LogScreen() {
           borderRadius: 12, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 10,
           marginBottom: 8,
         }}>
-          <Text style={{ fontSize: 20 }}>{CAT[category].emoji}</Text>
-          <Text style={{ flex: 1, fontSize: 15, fontWeight: '600', color: CAT[category].color }}>
-            {CAT[category].label}
+          <Text style={{ fontSize: 20 }}>{categories[category]?.emoji || '✨'}</Text>
+          <Text style={{ flex: 1, fontSize: 15, fontWeight: '600', color: categories[category]?.color || C.text }}>
+            {categories[category]?.label || 'Unknown'}
           </Text>
           <ChevronDown size={16} color={C.textSoft} style={{ transform: [{ rotate: showCats ? '180deg' : '0deg' }] }} />
         </TouchableOpacity>
 
         {showCats && (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
-            {(Object.entries(CAT) as [CategoryType, typeof CAT[CategoryType]][]).map(([key, cat]) => {
+            {(Object.entries(categories) as [CategoryType, any][]).map(([key, cat]) => {
               const catBg = isDark ? cat.darkBg : cat.lightBg;
               return (
                 <TouchableOpacity key={key} onPress={() => { setCategory(key); setShowCats(false); }} style={{

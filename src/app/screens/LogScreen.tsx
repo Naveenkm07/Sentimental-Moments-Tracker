@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Camera, Mic, X, ChevronDown } from "lucide-react";
 import { useApp } from "../App";
 import { C, CAT, MOOD } from "../theme";
@@ -13,12 +13,20 @@ export function LogScreen() {
   const [category, setCategory] = useState<CategoryType>('family');
   const [mood, setMood] = useState<MoodType>('nostalgic');
   const [showCats, setShowCats] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const canSave = title.trim().length >= 3;
 
   const handleSave = () => {
     if (!canSave) return;
-    addMoment({ title: title.trim(), detail: detail.trim() || undefined, date, category, mood });
+    addMoment({ 
+      title: title.trim(), 
+      detail: detail.trim() || undefined, 
+      date, category, mood, 
+      hasPhoto: !!photoUrl, 
+      photoUrl: photoUrl || undefined 
+    });
     navigate('log-success');
   };
 
@@ -42,10 +50,25 @@ export function LogScreen() {
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
         }}>
           <div style={{ display: 'flex', gap: 20 }}>
-            <button style={mediaBtn} onClick={() => navigate('log-voice')}>
-              <div style={{ ...mediaBtnIcon, background: '#FFF0EE' }}><Camera size={22} color={C.primary} /></div>
-              <span style={{ fontSize: 12, color: C.textSoft, fontWeight: 500 }}>Add photo</span>
+            <button style={mediaBtn} onClick={() => fileInputRef.current?.click()}>
+              <div style={{ ...mediaBtnIcon, background: photoUrl ? '#E8FFF4' : '#FFF0EE', overflow: 'hidden' }}>
+                {photoUrl ? (
+                  <img src={photoUrl} alt="Selected" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <Camera size={22} color={C.primary} />
+                )}
+              </div>
+              <span style={{ fontSize: 12, color: C.textSoft, fontWeight: 500 }}>
+                {photoUrl ? 'Photo added' : 'Add photo'}
+              </span>
             </button>
+            <input 
+              type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }} 
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (file) setPhotoUrl(URL.createObjectURL(file));
+              }} 
+            />
             <button style={mediaBtn} onClick={() => navigate('log-voice')}>
               <div style={{ ...mediaBtnIcon, background: '#FFF0EE' }}><Mic size={22} color={C.primary} /></div>
               <span style={{ fontSize: 12, color: C.textSoft, fontWeight: 500 }}>Add voice note</span>

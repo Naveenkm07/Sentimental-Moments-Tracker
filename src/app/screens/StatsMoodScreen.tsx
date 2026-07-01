@@ -17,15 +17,44 @@ export function StatsMoodScreen() {
   const total = moments.length;
   const maxCount = Math.max(...Object.values(moodCounts), 1);
 
-  // Monthly mood trend (last 6 months mock data)
-  const monthlyMoods = [
-    { month: 'Jan', dominant: 'grateful', count: 4 },
-    { month: 'Feb', dominant: 'nostalgic', count: 2 },
-    { month: 'Mar', dominant: 'peaceful', count: 5 },
-    { month: 'Apr', dominant: 'bittersweet', count: 3 },
-    { month: 'May', dominant: 'grateful', count: 6 },
-    { month: 'Jun', dominant: 'joyful', count: 4 },
-  ];
+  const monthlyMoods = useMemo(() => {
+    const months: Record<string, Record<string, number>> = {};
+    moments.forEach(m => {
+      const monthStr = format(parseISO(m.date), 'MMM');
+      if (!months[monthStr]) months[monthStr] = {};
+      months[monthStr][m.mood] = (months[monthStr][m.mood] ?? 0) + 1;
+    });
+
+    const result = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const monthStr = format(d, 'MMM');
+      const counts = months[monthStr] || {};
+      let dominant = 'grateful';
+      let maxC = 0;
+      for (const [mood, count] of Object.entries(counts)) {
+        if (count > maxC) { maxC = count; dominant = mood; }
+      }
+      result.push({ month: monthStr, dominant, count: maxC });
+    }
+    return result;
+  }, [moments]);
+
+  let topMood = 'grateful';
+  let topCount = 0;
+  for (const [k, c] of Object.entries(moodCounts)) {
+    if (c > topCount) { topCount = c; topMood = k; }
+  }
+  const topMoodLabel = MOOD[topMood as keyof typeof MOOD]?.label || 'Grateful';
+  
+  const moodMsg: Record<string, string> = {
+    grateful: "you are finding the beauty in the present moment. Keep cherishing what you have.",
+    peaceful: "you are finding calm in the chaos. That's a beautiful way to live.",
+    joyful: "your moments are filled with happiness. Keep spreading that light.",
+    nostalgic: "you have a deep appreciation for the past. Memories are a beautiful anchor.",
+    bittersweet: "you're capturing moments right at the edge of change. That's exactly what this app is for."
+  };
 
   return (
     <div style={{ background: C.bg, minHeight: '100%' }}>
@@ -135,8 +164,7 @@ export function StatsMoodScreen() {
             💛 Pattern
           </p>
           <p style={{ fontSize: 14, color: '#7A5600', margin: 0, lineHeight: 1.6 }}>
-            Your most common mood when logging is <strong>Bittersweet</strong> — which means you're capturing moments
-            right at the edge of change. That's exactly what this app is for.
+            Your most common mood when logging is <strong>{topMoodLabel}</strong> — which means {moodMsg[topMood] || moodMsg['grateful']}
           </p>
         </div>
       </div>

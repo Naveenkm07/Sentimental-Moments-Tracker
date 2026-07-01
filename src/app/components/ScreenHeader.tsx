@@ -19,11 +19,11 @@ export function ScreenHeader({ title, right, transparent }: ScreenHeaderProps) {
       gap: 12,
     }}>
       <button onClick={goBack} style={{
-        background: '#F2EFEB', border: 'none', borderRadius: '50%',
+        background: 'transparent', border: 'none', borderRadius: '50%',
         width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        cursor: 'pointer', flexShrink: 0,
+        cursor: 'pointer', flexShrink: 0, padding: 0,
       }}>
-        <ArrowLeft size={18} color={C.text} />
+        <ArrowLeft size={22} color={C.text} />
       </button>
       <h2 style={{ flex: 1, fontSize: 17, fontWeight: 700, color: C.text, margin: 0 }}>{title}</h2>
       {right}

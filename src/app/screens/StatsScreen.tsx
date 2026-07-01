@@ -29,7 +29,33 @@ export function StatsScreen() {
   const maxYear = Math.max(...byYear.map(([, n]) => n), 1);
   const maxCat = Math.max(...catCounts.map(([, n]) => n), 1);
 
-  const streak = 7; // mock streak
+  const streak = useMemo(() => {
+    if (moments.length === 0) return 0;
+    const dates = [...new Set(moments.map(m => new Date(m.date).toDateString()))]
+      .map(s => new Date(s).getTime())
+      .sort((a, b) => b - a);
+    let s = 0;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    let curr = today.getTime();
+    if (!dates.includes(curr)) {
+       curr = yesterday.getTime();
+       if (!dates.includes(curr)) return 0;
+    }
+    
+    for (let d of dates) {
+       if (d === curr) {
+         s++;
+         curr -= 86400000;
+       } else if (d < curr) {
+         break;
+       }
+    }
+    return s;
+  }, [moments]);
 
   return (
     <div style={{ background: C.bg, minHeight: '100%' }}>

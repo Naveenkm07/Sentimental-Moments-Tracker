@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Modal, TouchableOpacity, TextInput, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Moon, Bell, CloudUpload, Lock, HelpCircle, Star, Users, Info, Plus, ChevronDown, MessageCircle, FileText, Share2, Mail, ExternalLink, X } from 'lucide-react-native';
@@ -440,33 +440,49 @@ export const MemoryResurface = () => {
 };
 
 export const AnnualSummary = () => {
-  const { C } = useAppTheme();
+  const { C, isDark } = useAppTheme();
   const insets = useSafeAreaInsets();
+  const { moments, categories } = useApp();
+  
+  const year = new Date().getFullYear();
+  const thisYear = useMemo(() => moments.filter(m => new Date(m.date).getFullYear() === year), [moments, year]);
+  
+  const catCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    thisYear.forEach(m => { counts[m.category] = (counts[m.category] ?? 0) + 1; });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }, [thisYear]);
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <ScreenHeader title="Year in Review" />
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingTop: insets.top + 100, paddingHorizontal: 16, paddingBottom: 120 }}>
         <View style={{ backgroundColor: C.primary, borderRadius: 24, padding: 32, alignItems: 'center', marginBottom: 24 }}>
-          <Text style={{ fontSize: 16, fontWeight: '700', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>2023</Text>
+          <Text style={{ fontSize: 16, fontWeight: '700', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>{year}</Text>
           <Text style={{ fontSize: 40, fontWeight: '800', color: 'white', marginBottom: 24, textAlign: 'center' }}>Your Year of Memories</Text>
           <View style={{ flexDirection: 'row', gap: 16, width: '100%' }}>
             <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.2)', padding: 16, borderRadius: 16, alignItems: 'center' }}>
-              <Text style={{ fontSize: 28, fontWeight: '800', color: 'white', marginBottom: 4 }}>142</Text>
+              <Text style={{ fontSize: 28, fontWeight: '800', color: 'white', marginBottom: 4 }}>{thisYear.length}</Text>
               <Text style={{ fontSize: 12, color: 'white', fontWeight: '600', opacity: 0.9 }}>Moments</Text>
             </View>
             <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.2)', padding: 16, borderRadius: 16, alignItems: 'center' }}>
-              <Text style={{ fontSize: 28, fontWeight: '800', color: 'white', marginBottom: 4 }}>4</Text>
+              <Text style={{ fontSize: 28, fontWeight: '800', color: 'white', marginBottom: 4 }}>{catCounts.length}</Text>
               <Text style={{ fontSize: 12, color: 'white', fontWeight: '600', opacity: 0.9 }}>Categories</Text>
             </View>
           </View>
         </View>
 
         <SettingsGroup title="Top Categories">
-          <SettingsRow icon={<Text style={{ fontSize: 16 }}>👶</Text>} iconBg="#FFF2EC" label="Parenthood" value="84 moments" type="link" />
-          <SettingsRow icon={<Text style={{ fontSize: 16 }}>🏠</Text>} iconBg="#EEF3FF" label="Family" value="32 moments" type="link" isLast />
+          {catCounts.slice(0, 2).map(([key, count], i, arr) => {
+             const cat = categories[key];
+             if (!cat) return null;
+             return (
+               <SettingsRow key={key} icon={<Text style={{ fontSize: 16 }}>{cat.emoji}</Text>} iconBg={isDark ? cat.darkBg : cat.lightBg} label={cat.label} value={`${count} moments`} type="link" isLast={i === arr.length - 1} />
+             );
+          })}
+          {catCounts.length === 0 && <SettingsRow label="No moments logged yet" isLast />}
         </SettingsGroup>
-
+        
         <SettingsGroup title="Share">
           <SettingsRow icon={<Share2 size={16} color="white" />} iconBg="#4C79FF" label="Share Summary Image" type="link" isLast />
         </SettingsGroup>

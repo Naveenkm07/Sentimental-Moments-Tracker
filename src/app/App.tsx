@@ -98,18 +98,20 @@ function Router() {
     about: <AboutScreen />,
   };
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={s}
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -6 }}
-        transition={{ duration: 0.18 }}
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}
-      >
-        {screens[s] ?? <HomeScreen />}
-      </motion.div>
-    </AnimatePresence>
+    <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <AnimatePresence mode="popLayout">
+        <motion.div
+          key={s}
+          initial={{ opacity: 0, scale: 0.96, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.96, y: -10 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, width: '100%' }}
+        >
+          {screens[s] ?? <HomeScreen />}
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 }
 

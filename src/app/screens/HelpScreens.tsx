@@ -66,13 +66,34 @@ export function HelpScreen() {
         {/* Contact */}
         <div style={{ background: C.card, borderRadius: 16, overflow: 'hidden', border: `1px solid ${C.border}` }}>
           {[
-            { icon: Mail, label: 'Contact support', desc: 'hello@lasttime.app', color: C.blue },
-            { icon: Star, label: 'Rate the app', desc: 'Your reviews help more people find us', color: C.amber },
-            { icon: Heart, label: 'Share Last Time', desc: 'Tell someone who would love it', color: C.primary },
+            { 
+              icon: Mail, label: 'Contact support', desc: 'hello@lasttime.app', color: C.blue,
+              action: () => { window.location.href = 'mailto:hello@lasttime.app'; }
+            },
+            { 
+              icon: Star, label: 'Rate the app', desc: 'Your reviews help more people find us', color: C.amber,
+              action: () => { window.open('https://play.google.com/store/apps/details?id=com.sentimental.moments', '_blank'); }
+            },
+            { 
+              icon: Heart, label: 'Share Last Time', desc: 'Tell someone who would love it', color: C.primary,
+              action: () => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: 'Last Time',
+                    text: 'Cherish what is still here with the Last Time app.',
+                    url: 'https://lasttime.app'
+                  }).catch(() => {});
+                } else {
+                  navigator.clipboard.writeText('https://lasttime.app').then(() => {
+                    alert('App link copied to clipboard!');
+                  });
+                }
+              }
+            },
           ].map((row, i, arr) => {
             const Icon = row.icon;
             return (
-              <button key={row.label} style={{
+              <button key={row.label} onClick={row.action} style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 14,
                 padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer',
                 borderBottom: i < arr.length - 1 ? `1px solid ${C.divider}` : 'none', textAlign: 'left',

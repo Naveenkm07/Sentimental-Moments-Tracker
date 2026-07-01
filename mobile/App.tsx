@@ -19,8 +19,8 @@ import { PasscodeScreen } from './src/screens/PasscodeScreen';
 import { SearchScreen } from './src/screens/SearchScreen';
 import { ProfileScreen } from './src/screens/ProfileScreens';
 import {
-  SettingsNotifications, SettingsCategories, SettingsBackup, SettingsPasscode, SettingsTheme,
-  Keepsake, FamilyTimeline, Help, About, MemoryResurface, AnnualSummary
+  SettingsNotifications, SettingsCategories, SettingsPasscode, SettingsTheme,
+  Help, About, MemoryResurface, AnnualSummary
 } from './src/screens/PlaceholderScreens';
 
 export type RootStackParamList = {
@@ -40,11 +40,8 @@ export type RootStackParamList = {
   Search: undefined;
   Notifications: undefined;
   Categories: undefined;
-  Backup: undefined;
   Passcode: undefined;
   Theme: undefined;
-  Keepsake: undefined;
-  FamilyTimeline: undefined;
   Help: undefined;
   About: undefined;
   MemoryResurface: undefined;
@@ -93,11 +90,8 @@ function MainNavigator() {
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Notifications" component={SettingsNotifications} />
       <Stack.Screen name="Categories" component={SettingsCategories} />
-      <Stack.Screen name="Backup" component={SettingsBackup} />
       <Stack.Screen name="Passcode" component={SettingsPasscode} />
       <Stack.Screen name="Theme" component={SettingsTheme} />
-      <Stack.Screen name="Keepsake" component={Keepsake} />
-      <Stack.Screen name="FamilyTimeline" component={FamilyTimeline} />
       <Stack.Screen name="Help" component={Help} />
       <Stack.Screen name="About" component={About} />
       <Stack.Screen name="MemoryResurface" component={MemoryResurface} />

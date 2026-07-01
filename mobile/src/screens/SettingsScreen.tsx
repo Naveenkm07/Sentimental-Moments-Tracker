@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useNavigation } from '@react-navigation/native';
-import { Bell, Tag, CloudUpload, Lock, Moon, HelpCircle, Info, ChevronRight, Star, Users } from 'lucide-react-native';
+import { Bell, Tag, Lock, Moon, HelpCircle, Info, ChevronRight } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppTheme } from '../theme';
 import { ScreenName } from '../theme';
@@ -20,11 +20,8 @@ interface SettingRow {
 const ROWS: SettingRow[] = [
   { icon: Bell,        label: 'Notifications',    desc: 'Daily nudge preferences',       screen: 'settings-notifications', color: '#FF9500' },
   { icon: Tag,         label: 'Categories',        desc: 'Manage your life categories',   screen: 'settings-categories',    color: '#9B5EDB' }, // C.purple
-  { icon: CloudUpload, label: 'Backup & Sync',     desc: 'iCloud / Google Drive backup',  screen: 'settings-backup',        color: '#4C79FF' }, // C.blue
   { icon: Lock,        label: 'Passcode Lock',     desc: 'Protect your memories',         screen: 'settings-passcode',      color: '#2BB57A' }, // C.green
   { icon: Moon,        label: 'Appearance',        desc: 'Light, dark, or system theme',  screen: 'settings-theme',         color: '#5856D6' },
-  { icon: Star,        label: 'Keepsake Premium',  desc: 'Export, family timeline & more',screen: 'keepsake',               color: '#F5A623', badge: 'PRO' }, // C.amber
-  { icon: Users,       label: 'Family Timeline',   desc: 'Share with loved ones',         screen: 'family-timeline',        color: '#D84E3B' }, // C.primary
   { icon: HelpCircle,  label: 'Help & FAQ',         desc: 'Get support',                   screen: 'help' },
   { icon: Info,        label: 'About Last Time',   desc: 'Version, licenses & credits',   screen: 'about' },
 ];

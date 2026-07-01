@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { Audio } from 'expo-av';
 import { ArrowLeft, Mic, Square, Play, Pause, Check, Sparkles } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,20 +15,71 @@ export function LogVoiceScreen() {
   const [state, setState] = useState<'idle' | 'recording' | 'done'>('idle');
   const [seconds, setSeconds] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [audioUri, setAudioUri] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const startRec = () => {
-    setState('recording');
-    setSeconds(0);
-    timerRef.current = setInterval(() => setSeconds(s => s + 1), 1000);
+  const startRec = async () => {
+    try {
+      const permission = await Audio.requestPermissionsAsync();
+      if (permission.status === 'granted') {
+        await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+        const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+        setRecording(recording);
+        setState('recording');
+        setSeconds(0);
+        timerRef.current = setInterval(() => setSeconds(s => s + 1), 1000);
+      } else {
+        Alert.alert('Permission needed', 'Please grant microphone access to record voice notes.');
+      }
+    } catch (err) {
+      console.error('Failed to start recording', err);
+    }
   };
 
-  const stopRec = () => {
+  const stopRec = async () => {
     setState('done');
     if (timerRef.current) clearInterval(timerRef.current);
+    if (recording) {
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      setAudioUri(uri);
+      setRecording(null);
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+    }
   };
 
-  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
+  const togglePlayback = async () => {
+    if (playing) {
+      if (sound) await sound.pauseAsync();
+      setPlaying(false);
+    } else {
+      if (!sound && audioUri) {
+        const { sound: newSound } = await Audio.Sound.createAsync(
+          { uri: audioUri },
+          { shouldPlay: true }
+        );
+        newSound.setOnPlaybackStatusUpdate(status => {
+          if (status.isLoaded && status.didJustFinish) {
+            setPlaying(false);
+          }
+        });
+        setSound(newSound);
+        setPlaying(true);
+      } else if (sound) {
+        await sound.playAsync();
+        setPlaying(true);
+      }
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (sound) sound.unloadAsync();
+    };
+  }, [sound]);
 
   const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
@@ -70,7 +122,7 @@ export function LogVoiceScreen() {
           </TouchableOpacity>
         ) : (
           <View style={{ gap: 12, width: '100%' }}>
-            <TouchableOpacity onPress={() => setPlaying(!playing)} style={{ backgroundColor: C.card, borderWidth: 1.5, borderColor: C.border, borderRadius: 14, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <TouchableOpacity onPress={togglePlayback} style={{ backgroundColor: C.card, borderWidth: 1.5, borderColor: C.border, borderRadius: 14, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
               {playing ? <Pause size={18} color={C.text} /> : <Play size={18} color={C.text} />}
               <Text style={{ fontSize: 15, fontWeight: '600', color: C.text }}>{playing ? 'Pause' : 'Play back'} ({fmt(seconds)})</Text>
             </TouchableOpacity>
@@ -78,7 +130,7 @@ export function LogVoiceScreen() {
               <Check size={18} color="white" />
               <Text style={{ fontSize: 15, fontWeight: '700', color: 'white' }}>Attach to memory</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => { setState('idle'); setSeconds(0); }} style={{ padding: 10, alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => { setState('idle'); setSeconds(0); setAudioUri(null); if (sound) { sound.unloadAsync(); setSound(null); } }} style={{ padding: 10, alignItems: 'center' }}>
               <Text style={{ color: C.textSoft, fontSize: 14 }}>Re-record</Text>
             </TouchableOpacity>
           </View>

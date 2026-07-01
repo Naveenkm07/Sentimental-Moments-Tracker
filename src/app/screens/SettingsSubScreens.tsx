@@ -67,8 +67,13 @@ function Card({ children }: { children: React.ReactNode }) {
 
 export function SettingsNotificationsScreen() {
   const { notificationsEnabled, setNotificationsEnabled } = useApp();
-  const [time, setTime] = useState('20:00');
-  const [tone, setTone] = useState('gentle');
+  const [time, setTime] = useState(() => localStorage.getItem('lt-time') || '20:00');
+  const [tone, setTone] = useState(() => localStorage.getItem('lt-tone') || 'gentle');
+  const [streakReminders, setStreakReminders] = useState(() => localStorage.getItem('lt-streak') === 'true');
+
+  const updateTime = (t: string) => { setTime(t); localStorage.setItem('lt-time', t); };
+  const updateTone = (t: string) => { setTone(t); localStorage.setItem('lt-tone', t); };
+  const toggleStreak = () => { const next = !streakReminders; setStreakReminders(next); localStorage.setItem('lt-streak', String(next)); };
 
   return (
     <div style={{ background: C.bg, minHeight: '100%' }}>
@@ -83,7 +88,7 @@ export function SettingsNotificationsScreen() {
               <p style={{ fontSize: 12, fontWeight: 700, color: C.textSoft, margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 Reminder time
               </p>
-              <input type="time" value={time} onChange={e => setTime(e.target.value)} style={{
+              <input type="time" value={time} onChange={e => updateTime(e.target.value)} style={{
                 background: '#F2EFEB', border: 'none', borderRadius: 10,
                 padding: '10px 14px', fontSize: 15, color: C.text, outline: 'none',
                 fontFamily: 'inherit',
@@ -91,7 +96,7 @@ export function SettingsNotificationsScreen() {
             </div>
           )}
           <SettingRow icon={BellOff} label="Streak reminders" desc="Remind me if I haven't logged in 3 days" right={
-            <Toggle on={false} onToggle={() => {}} />
+            <Toggle on={streakReminders} onToggle={toggleStreak} />
           } />
         </Card>
 
@@ -104,7 +109,7 @@ export function SettingsNotificationsScreen() {
                 { val: 'prompt', label: 'Prompt', desc: 'Includes today\'s nudge question' },
                 { val: 'minimal', label: 'Minimal', desc: 'Just the app name' },
               ].map(opt => (
-                <button key={opt.val} onClick={() => setTone(opt.val)} style={{
+                <button key={opt.val} onClick={() => updateTone(opt.val)} style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px',
                   background: tone === opt.val ? C.primaryLight : 'none',
                   border: `1.5px solid ${tone === opt.val ? C.primary : 'transparent'}`,
@@ -186,8 +191,43 @@ export function SettingsCategoriesScreen() {
 // ─── Backup ───────────────────────────────────────────────────────────────────
 
 export function SettingsBackupScreen() {
+  const { moments } = useApp();
   const [syncing, setSyncing] = useState(false);
   const [lastSync] = useState('Never');
+  
+  const [autoBackup, setAutoBackup] = useState(() => localStorage.getItem('lt-autobackup') === 'true');
+  const toggleAutoBackup = () => {
+    const next = !autoBackup;
+    setAutoBackup(next);
+    localStorage.setItem('lt-autobackup', String(next));
+  };
+  
+  const [gdriveConnected, setGdriveConnected] = useState(() => localStorage.getItem('lt-gdrive') === 'true');
+  const toggleGdrive = () => {
+    if (gdriveConnected) {
+      setGdriveConnected(false);
+      localStorage.setItem('lt-gdrive', 'false');
+    } else {
+      setTimeout(() => {
+        setGdriveConnected(true);
+        localStorage.setItem('lt-gdrive', 'true');
+      }, 600);
+    }
+  };
+
+  const exportJSON = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(moments));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "last-time-backup.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
+
+  const exportPDF = () => {
+    alert("Export to PDF is a Keepsake Premium feature. Upgrade to unlock beautiful memory books!");
+  };
 
   return (
     <div style={{ background: C.bg, minHeight: '100%' }}>
@@ -210,11 +250,11 @@ export function SettingsBackupScreen() {
 
         <Card>
           <SettingRow icon={Shield} iconColor={C.green} label="Auto-backup" desc="Back up daily when on Wi-Fi" right={
-            <Toggle on={false} onToggle={() => {}} />
+            <Toggle on={autoBackup} onToggle={toggleAutoBackup} />
           } />
           <SettingRow icon={Shield} iconColor={C.blue} label="Google Drive" desc="Connect your Google account" right={
-            <button style={{ background: C.primary + '15', color: C.primary, border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
-              Connect
+            <button onClick={toggleGdrive} style={{ background: C.primary + '15', color: C.primary, border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+              {gdriveConnected ? 'Disconnect' : 'Connect'}
             </button>
           } />
         </Card>
@@ -226,10 +266,10 @@ export function SettingsBackupScreen() {
               { label: 'Export as JSON', desc: 'All data, machine-readable', emoji: '📄' },
               { label: 'Export as PDF', desc: 'Beautiful keepsake book', emoji: '📖', pro: true },
             ].map(opt => (
-              <div key={opt.label} style={{
+              <div key={opt.label} onClick={opt.label.includes('JSON') ? exportJSON : exportPDF} style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '10px', borderRadius: 10, marginBottom: 6,
-                background: '#F7F5F2',
+                background: '#F7F5F2', cursor: 'pointer'
               }}>
                 <span style={{ fontSize: 20 }}>{opt.emoji}</span>
                 <div style={{ flex: 1 }}>
@@ -256,6 +296,13 @@ export function SettingsPasscodeScreen() {
   const { passcodeEnabled, setPasscodeEnabled } = useApp();
   const [entered, setEntered] = useState('');
   const [step, setStep] = useState<'toggle' | 'set' | 'confirm'>('toggle');
+  
+  const [biometrics, setBiometrics] = useState(() => localStorage.getItem('lt-biometrics') === 'true');
+  const toggleBiometrics = () => {
+    const next = !biometrics;
+    setBiometrics(next);
+    localStorage.setItem('lt-biometrics', String(next));
+  };
 
   const handleDigit = (d: string) => {
     if (entered.length >= 4) return;
@@ -280,7 +327,7 @@ export function SettingsPasscodeScreen() {
             }} />
           } />
           <SettingRow icon={Key} iconColor={C.purple} label="Face ID / biometrics" desc="Use biometrics to unlock" right={
-            <Toggle on={passcodeEnabled} onToggle={() => {}} />
+            <Toggle on={biometrics} onToggle={toggleBiometrics} />
           } />
         </Card>
 
@@ -322,6 +369,11 @@ export function SettingsPasscodeScreen() {
 
 export function SettingsThemeScreen() {
   const { themeChoice, setThemeChoice } = useApp();
+  const [fontSize, setFontSize] = useState(() => localStorage.getItem('lt-fontsize') || 'Medium');
+  const updateFontSize = (s: string) => {
+    setFontSize(s);
+    localStorage.setItem('lt-fontsize', s);
+  };
 
   const themes = [
     { val: 'light' as const, icon: Sun, label: 'Light', desc: 'Clean cream background', color: '#F5A623' },
@@ -369,12 +421,12 @@ export function SettingsThemeScreen() {
         <div style={{ marginTop: 20, background: C.card, borderRadius: 14, padding: '14px 16px', border: `1px solid ${C.border}` }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: C.text, margin: '0 0 10px' }}>Font size</p>
           <div style={{ display: 'flex', gap: 8 }}>
-            {['Small', 'Medium', 'Large'].map((s, i) => (
-              <button key={s} style={{
+            {['Small', 'Medium', 'Large'].map((s) => (
+              <button key={s} onClick={() => updateFontSize(s)} style={{
                 flex: 1, padding: '10px',
-                background: i === 1 ? C.primary : C.bg,
-                color: i === 1 ? 'white' : C.textMid,
-                border: `1px solid ${i === 1 ? C.primary : C.border}`,
+                background: fontSize === s ? C.primary : C.bg,
+                color: fontSize === s ? 'white' : C.textMid,
+                border: `1px solid ${fontSize === s ? C.primary : C.border}`,
                 borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer',
               }}>{s}</button>
             ))}

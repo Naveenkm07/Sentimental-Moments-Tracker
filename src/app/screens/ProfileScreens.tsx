@@ -6,7 +6,7 @@ import { useApp } from "../App";
 import { C, CAT, MOOD } from "../theme";
 
 export function ProfileScreen() {
-  const { moments, navigate } = useApp();
+  const { moments, navigate, darkMode } = useApp();
 
   const years = useMemo(() => {
     const s = new Set(moments.map(m => getYear(parseISO(m.date))));
@@ -133,7 +133,7 @@ export function ProfileScreen() {
                 return (
                   <button key={year} onClick={() => navigate('timeline')} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    background: '#F7F5F2', borderRadius: 10, padding: '10px 14px',
+                    background: darkMode ? '#2A2A2A' : '#F7F5F2', borderRadius: 10, padding: '10px 14px',
                     border: 'none', cursor: 'pointer', width: '100%',
                   }}>
                     <span style={{ fontWeight: 700, color: C.text, fontSize: 15 }}>{year}</span>

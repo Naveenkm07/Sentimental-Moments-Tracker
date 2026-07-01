@@ -64,6 +64,8 @@ export const SettingsBackup = () => {
   const { C, isDark } = useAppTheme();
   const insets = useSafeAreaInsets();
   const [syncing, setSyncing] = useState(false);
+  const [autoSync, setAutoSync] = useState(true);
+  const [connected, setConnected] = useState(false);
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
@@ -79,10 +81,10 @@ export const SettingsBackup = () => {
           </Text>
         </View>
         <SettingsGroup>
-          <SettingsRow label="Account" value="alex@example.com" type="link" />
-          <SettingsRow label="Auto-Sync" type="toggle" toggleValue={true} onToggle={() => { }} />
-          <SettingsRow label="Storage Used" value="12 MB" type="link" />
-          <SettingsRow label="Last Backup" value="Today, 9:41 AM" type="link" isLast />
+          <SettingsRow label="Account" value={connected ? "alex@example.com" : "Not connected"} type="link" onPress={() => setConnected(!connected)} />
+          <SettingsRow label="Auto-Sync" type="toggle" toggleValue={autoSync} onToggle={setAutoSync} />
+          <SettingsRow label="Storage Used" value={connected ? "12 MB" : "0 MB"} type="link" />
+          <SettingsRow label="Last Backup" value={connected ? "Today, 9:41 AM" : "Never"} type="link" isLast />
         </SettingsGroup>
 
         <SettingsGroup>
@@ -241,6 +243,8 @@ export const Keepsake = () => {
 export const FamilyTimeline = () => {
   const { C } = useAppTheme();
   const insets = useSafeAreaInsets();
+  const [approvals, setApprovals] = useState(true);
+  const [alerts, setAlerts] = useState(true);
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
@@ -258,8 +262,8 @@ export const FamilyTimeline = () => {
         </View>
 
         <SettingsGroup title="Timeline Settings" footer="Only invited members can view and add to this timeline.">
-          <SettingsRow label="Member Approvals" type="toggle" toggleValue={true} onToggle={() => { }} />
-          <SettingsRow label="Notification Alerts" type="toggle" toggleValue={true} onToggle={() => { }} isLast />
+          <SettingsRow label="Member Approvals" type="toggle" toggleValue={approvals} onToggle={setApprovals} />
+          <SettingsRow label="Notification Alerts" type="toggle" toggleValue={alerts} onToggle={setAlerts} isLast />
         </SettingsGroup>
 
         <SettingsGroup title="Members">

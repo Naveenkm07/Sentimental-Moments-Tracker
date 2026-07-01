@@ -92,7 +92,7 @@ export function ProfileScreen() {
               { label: '📅 Annual summary', desc: 'Your year in memories', screen: 'AnnualSummary' },
               { label: '👨‍👩‍👧 Family timeline', desc: 'Shared moments with loved ones', screen: 'FamilyTimeline' },
             ].map((row, i, arr) => (
-              <TouchableOpacity key={row.screen} onPress={() => {}} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14, paddingHorizontal: 16, borderBottomWidth: i < arr.length - 1 ? 1 : 0, borderBottomColor: C.divider }}>
+              <TouchableOpacity key={row.screen} onPress={() => navigation.navigate(row.screen)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14, paddingHorizontal: 16, borderBottomWidth: i < arr.length - 1 ? 1 : 0, borderBottomColor: C.divider }}>
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontWeight: '600', color: C.text, fontSize: 14, marginBottom: 2 }}>{row.label}</Text>
                   <Text style={{ color: C.textSoft, fontSize: 12 }}>{row.desc}</Text>

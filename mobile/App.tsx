@@ -54,7 +54,7 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function MainNavigator() {
-  const { isLoaded, hasOnboarded, passcodeEnabled, isUnlocked } = useApp();
+  const { isLoaded, hasOnboarded, passcodeEnabled, isUnlocked, setIsUnlocked } = useApp();
   const { C } = useAppTheme();
 
   if (!isLoaded) {
@@ -66,7 +66,7 @@ function MainNavigator() {
   }
 
   if (passcodeEnabled && !isUnlocked) {
-    return <PasscodeScreen mode="unlock" onSuccess={() => {}} />;
+    return <PasscodeScreen mode="unlock" onSuccess={() => setIsUnlocked(true)} />;
   }
 
   return (

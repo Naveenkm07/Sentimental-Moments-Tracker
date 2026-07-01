@@ -326,7 +326,33 @@ export const About = () => {
   const insets = useSafeAreaInsets();
   const [doc, setDoc] = useState<'terms' | 'privacy' | null>(null);
 
-  const MOCK_TEXT = "This is a placeholder for the legal documentation required for the Google Play Store. In a production app, this would contain the full legal text for the Terms of Service or Privacy Policy, outlining data collection, usage, and user rights in detail.";
+  const TERMS_OF_SERVICE = `Welcome to Sentimental Moments ("App"). By using our App, you agree to these Terms of Service.
+
+1. Use of the App
+You may use the App for your personal, non-commercial use. You are responsible for all content you log and store.
+
+2. Privacy & Data
+We prioritize your privacy. Your data is stored locally on your device unless you explicitly opt into Cloud Backup. We do not sell your personal data.
+
+3. User Content
+You retain all rights to the photos, text, and voice notes you add to the App. We claim no ownership over your memories.
+
+4. Limitation of Liability
+The App is provided "as is". We are not liable for any data loss, so we strongly recommend utilizing the backup features provided.`;
+
+  const PRIVACY_POLICY = `Your privacy is critically important to us.
+
+1. Information We Collect
+The App collects data you provide directly: text logs, photos, voice recordings, and metadata (like timestamps).
+
+2. How We Store Your Data
+By default, all your data is stored locally on your mobile device. If you use the Backup & Sync feature, your data is transmitted securely and stored in your linked personal cloud account.
+
+3. Analytics & Diagnostics
+We may collect anonymous usage data and crash reports to improve the App. This data does not contain any of your personal memories or identifiable information.
+
+4. Third-Party Services
+We do not share your memories with third parties. Authentication and backup features may utilize third-party APIs (e.g., Google Drive) subject to their respective privacy policies.`;
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
@@ -344,7 +370,7 @@ export const About = () => {
           </View>
           <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
             <Text style={{ fontSize: 14, color: C.textSoft, lineHeight: 24, marginBottom: 16 }}>Last Updated: October 2023</Text>
-            <Text style={{ fontSize: 15, color: C.text, lineHeight: 24 }}>{MOCK_TEXT}{'\n\n'}{MOCK_TEXT}{'\n\n'}{MOCK_TEXT}</Text>
+            <Text style={{ fontSize: 15, color: C.text, lineHeight: 24 }}>{doc === 'terms' ? TERMS_OF_SERVICE : PRIVACY_POLICY}</Text>
           </ScrollView>
         </View>
       ) : null}
@@ -383,5 +409,68 @@ export const About = () => {
 
 // Aliases for missing ones
 export const SettingsTheme = SettingsAppearance;
-export const MemoryResurface = SettingsNotifications;
-export const AnnualSummary = () => <Help />; // Placeholder reuse
+
+export const MemoryResurface = () => {
+  const { C, isDark } = useAppTheme();
+  const insets = useSafeAreaInsets();
+  const [resurfaceEnabled, setResurfaceEnabled] = useState(true);
+
+  return (
+    <View style={{ flex: 1, backgroundColor: C.bg }}>
+      <ScreenHeader title="Memory Resurface" />
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingTop: insets.top + 100, paddingHorizontal: 16, paddingBottom: 120 }}>
+        <View style={{ alignItems: 'center', marginBottom: 24, marginTop: 12 }}>
+          <View style={{ width: 80, height: 80, borderRadius: 24, backgroundColor: isDark ? '#2A2A2A' : '#F5F5F5', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+            <Star size={40} color="#F5A623" fill="#F5A623" />
+          </View>
+          <Text style={{ fontSize: 20, fontWeight: '700', color: C.text, marginBottom: 8 }}>On This Day</Text>
+          <Text style={{ color: C.textSoft, textAlign: 'center', marginHorizontal: 32, lineHeight: 20 }}>
+            Rediscover past moments. We'll occasionally highlight memories from previous years to bring a smile to your face.
+          </Text>
+        </View>
+        <SettingsGroup footer="When enabled, you'll see a 'Memory of the Day' at the top of your timeline and receive occasional notifications.">
+          <SettingsRow
+            icon={<Star size={16} color="white" />} iconBg="#F5A623"
+            label="Enable Resurfacing" type="toggle" toggleValue={resurfaceEnabled} onToggle={setResurfaceEnabled} isLast
+          />
+        </SettingsGroup>
+      </ScrollView>
+    </View>
+  );
+};
+
+export const AnnualSummary = () => {
+  const { C } = useAppTheme();
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View style={{ flex: 1, backgroundColor: C.bg }}>
+      <ScreenHeader title="Year in Review" />
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingTop: insets.top + 100, paddingHorizontal: 16, paddingBottom: 120 }}>
+        <View style={{ backgroundColor: C.primary, borderRadius: 24, padding: 32, alignItems: 'center', marginBottom: 24 }}>
+          <Text style={{ fontSize: 16, fontWeight: '700', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>2023</Text>
+          <Text style={{ fontSize: 40, fontWeight: '800', color: 'white', marginBottom: 24, textAlign: 'center' }}>Your Year of Memories</Text>
+          <View style={{ flexDirection: 'row', gap: 16, width: '100%' }}>
+            <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.2)', padding: 16, borderRadius: 16, alignItems: 'center' }}>
+              <Text style={{ fontSize: 28, fontWeight: '800', color: 'white', marginBottom: 4 }}>142</Text>
+              <Text style={{ fontSize: 12, color: 'white', fontWeight: '600', opacity: 0.9 }}>Moments</Text>
+            </View>
+            <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.2)', padding: 16, borderRadius: 16, alignItems: 'center' }}>
+              <Text style={{ fontSize: 28, fontWeight: '800', color: 'white', marginBottom: 4 }}>4</Text>
+              <Text style={{ fontSize: 12, color: 'white', fontWeight: '600', opacity: 0.9 }}>Categories</Text>
+            </View>
+          </View>
+        </View>
+
+        <SettingsGroup title="Top Categories">
+          <SettingsRow icon={<Text style={{ fontSize: 16 }}>👶</Text>} iconBg="#FFF2EC" label="Parenthood" value="84 moments" type="link" />
+          <SettingsRow icon={<Text style={{ fontSize: 16 }}>🏠</Text>} iconBg="#EEF3FF" label="Family" value="32 moments" type="link" isLast />
+        </SettingsGroup>
+
+        <SettingsGroup title="Share">
+          <SettingsRow icon={<Share2 size={16} color="white" />} iconBg="#4C79FF" label="Share Summary Image" type="link" isLast />
+        </SettingsGroup>
+      </ScrollView>
+    </View>
+  );
+};

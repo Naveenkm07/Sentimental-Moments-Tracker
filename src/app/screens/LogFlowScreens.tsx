@@ -196,7 +196,7 @@ export function LogSuccessScreen() {
         <button onClick={() => navigate('home')} style={{
           width: '100%', padding: 15,
           background: 'white', border: 'none',
-          borderRadius: 14, color: C.text, fontSize: 15, fontWeight: 700, cursor: 'pointer',
+          borderRadius: 14, color: '#111827', fontSize: 15, fontWeight: 700, cursor: 'pointer',
         }}>
           Back to home
         </button>

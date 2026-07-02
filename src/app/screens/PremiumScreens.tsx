@@ -3,6 +3,7 @@ import { Check, Star, FileText, Users, Download } from "lucide-react";
 import { useApp } from "../App";
 import { C } from "../theme";
 import { ScreenHeader } from "../components/ScreenHeader";
+import { toast } from "sonner";
 
 // ── Keepsake Premium Upsell ───────────────────────────────────────────────────
 
@@ -119,6 +120,20 @@ export function KeepsakeScreen() {
 export function KeepsakeExportScreen() {
   const { moments, navigate } = useApp();
 
+  const handleGeneratePdf = () => {
+    toast.success('Generating PDF...');
+    setTimeout(() => {
+      const element = document.createElement("a");
+      const file = new Blob(["Simulated PDF Content for " + moments.length + " moments.\n\nThank you for using Sentimental Moments Tracker!"], {type: 'text/plain'});
+      element.href = URL.createObjectURL(file);
+      element.download = "MemoryBook.txt"; // Downloading as txt for the simulation
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      toast.success('Download complete!');
+    }, 1500);
+  };
+
   const pages = [
     { title: 'Cover', preview: '📖', desc: 'Your personalized cover with name and year' },
     { title: 'Introduction', preview: '✍️', desc: 'A personal note you write for the reader' },
@@ -190,7 +205,7 @@ export function KeepsakeExportScreen() {
           ))}
         </div>
 
-        <button style={primaryBtn}>
+        <button onClick={handleGeneratePdf} style={primaryBtn}>
           <Download size={16} style={{ marginRight: 8 }} />
           Generate PDF · {moments.length} moments
         </button>

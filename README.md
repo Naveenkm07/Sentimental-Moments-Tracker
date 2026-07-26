@@ -1,10 +1,10 @@
 # 📖 Sentimental Moments Tracker
 
-![Sentimental Moments Hero](https://images.unsplash.com/photo-1516962215378-7fa2e137ae93?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80) <!-- Replace with your actual hero screenshot -->
+![Sentimental Moments Hero378-7fa2e137ae93?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80) <!-- Replace with your actual hero screenshot -->
 
 A beautifully designed, deeply personal journal and memory-tracking application. Sentimental Moments Tracker helps you capture life's most precious memories using text, photos, and voice notes. Relive your journey through an interactive timeline, analyze your mood trends, and safely back up your memories.
 
-Originally conceptualized in [Figma](https://www.figma.com/design/XHtJYCO2RbDCUlHXjQQHxd/Sentimental-Moments-Tracker), this project features both a responsive Web Application and a fully-fledged Mobile Application (Android/iOS).
+Originally conceptualized in [Figma](https://www.figma.Hxd/Sentimental-Moments-Tracker), this project features both a responsive Web Application and a fully-fledged Mobile Application (Android/iOS).
 
 ---
 
